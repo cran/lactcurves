@@ -43,4 +43,22 @@ data=cbind.data.frame(ID,dim,mkg)
 
 ## run example
 
-AllCurves(data,mkg,dim)
+output=AllCurves(data,mkg,dim)
+
+output$critall
+output$modeldescrip
+output$critbest
+output$bestmodel
+output$Error
+output$ModelParam
+output$summary17b
+
+## plot curve
+# set the number of days to consider
+dim=c(1:340)
+
+# look up the model and its estimated parameters
+output$summary17b
+
+# use model and parameters to plot curve
+plot(19.293701+(31.358471-19.293701)*(1-exp(1)^(-0.059874*dim))-0.035495*dim)

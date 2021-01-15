@@ -20,13 +20,15 @@ AllCurves(x, trait, dim)
 }
 
 \value{Output
-\item{modelnames}{provides names of and order number of models}
+\item{modelnames}{provides names and order number of models}
 \item{model}{gives model equation, default starting parameters, and other model specifications}
 \item{critall}{gives selection criteria for all models sorted from best to worst accroding to specified criteria}
 \item{modeldescrip}{gives RSS, RSD, and F-value for each model}
 \item{critbest}{gives all selection	criteria for best model}
 \item{bestmodel}{gives model equation for best model for each selection criterion}
 \item{Error}{gives a Warning if model failed to converge}
+\item{ModelParam}{gives a list of three tables containing the converged model parameters}
+\item{summary*}{gives the summary of a particular model. summary1 for example give the summary of the first model by Michaelis and Menten}
 }
 
 \author{
@@ -64,11 +66,33 @@ data=cbind.data.frame(ID,dim,mkg)
 
 ## run example
 
-AllCurves(data,mkg,dim)
+library(polynom)
+library(orthopolynom)
+library(splines)
+
+output=AllCurves(data,mkg,dim)
+
+output$critall
+output$modeldescrip
+output$critbest
+output$bestmodel
+output$Error
+output$ModelParam
+output$summary17b
+
+## plot curve
+# set the number of days to consider
+dim=c(1:340)
+
+# look up the model and its estimated parameters
+output$summary17b
+
+# use model and parameters to plot curve
+plot(19.293701+(31.358471-19.293701)*(1-exp(1)^(-0.059874*dim))-0.035495*dim)
 }
 
 \section{Citation}{
-Strucken, E.M. (2019). lactcurves: Lactation Curve Parameter Estimation. R package version 1.0.0
+Strucken, E.M. (2021). lactcurves: Lactation Curve Parameter Estimation. R package version 1.1.0
 }
 
 

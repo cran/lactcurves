@@ -1,6 +1,7 @@
-	## Copyright Eva M. Strucken 2019
+	## Copyright Eva M. Strucken 2021
 	## estrucke@une.edu.au
-	##
+	## eva.strucken@gmail.com
+  ##
 	## A script to run multiple lactation curve models and
 	## extract selection criterions (RSE, R2, log likelihood,
 	## AIC, AICC, and BIC.
@@ -16,16 +17,19 @@
 	## Output
 	## ==================================================================
 	## modelnames:	provides names of models and number (order)
-	## model:		gives model formula, default starting parameters,
-	##			and other model specifications
-	## bestmodel:	gives model formula for best model for each
-	##			selection criterion
+	## model:		    gives model formula, default starting parameters,
+	##			        and other model specifications
+	## bestmodel:	  gives model formula for best model for each
+	##			        selection criterion
 	## modeldescrip:	gives RSS, RSD, and F-value for each model
-	## critbest:	gives values for best model for all selection
-	##			criterions
-	## critall:		gives values for all models sorted from top to
-	##			bottom according to specified selection criterion
-	## Error:		gives a Warning model failed to converge
+	## critbest:	  gives values for best model for all selection
+	##			        criterions
+	## critall:	  	gives values for all models sorted from top to
+	##		        	bottom according to specified selection criterion
+	## Error:		    gives a Warning model failed to converge
+	## ModelParam:	gives a list with three tables with curve
+	##		        	parameters for each converged model
+	## summary*:  	give the summary of the model output, e.g. summary1
 	## ==================================================================
 
 AllCurves <- function(x,trait,dim){
@@ -43,7 +47,7 @@ MM=try(nls(trait ~ (a*dim) /(b+dim) , data=x, na.action=na.exclude,
 start=list(a=19.8,b=-1.65),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(MM)=="nls"){
+if(class(MM)=="nls" & MM$convInfo$isConv==TRUE){
 wMM=c(MM$convInfo$stopMessage,MM$convInfo$isConv)
 coefMM=length(coef(MM))
 R2MM=cor(trait,predict(MM),use="complete.obs")^2
@@ -62,6 +66,8 @@ RSDMM=sqrt(RSSMM/(n-coefMM))
 RSMM=residuals(MM)
 RS1MM=as.numeric(c(residuals(MM)[-1],"NA"))
 DWMM=sum((RSMM-RS1MM)^2, na.rm=TRUE)/sum(RSMM^2, na.rm=TRUE)
+paramMM=coef(MM)
+summaryMM=summary(MM)
 	}else
 {wMM=c("Missing value or infinity produced","FALSE")
 coefMM=NA
@@ -76,7 +82,9 @@ mMM="NA"
 RSSMM="NA"
 FMM="NA"
 RSDMM="NA"
-DWMM="NA"}
+DWMM="NA"
+paramMM="NA"
+summaryMM="NA"}
 
 remove(MM,TSSMM,PSSMM,RSMM,RS1MM)
 
@@ -85,7 +93,7 @@ MMR=try(nls(trait ~ 1/(1+a/(b+dim)) , data=x, na.action=na.exclude,
 start=list(a=-10,b=-1.4),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(MMR)=="nls"){
+if(class(MMR)=="nls" & MMR$convInfo$isConv==TRUE){
 wMMR=c(MMR$convInfo$stopMessage,MMR$convInfo$isConv)
 coefMMR=length(coef(MMR))
 R2MMR=cor(trait,predict(MMR),use="complete.obs")^2
@@ -104,6 +112,8 @@ RSDMMR=sqrt(RSSMMR/(n-coefMMR))
 RSMMR=residuals(MMR)
 RS1MMR=as.numeric(c(residuals(MMR)[-1],"NA"))
 DWMMR=sum((RSMMR-RS1MMR)^2, na.rm=TRUE)/sum(RSMMR^2, na.rm=TRUE)
+paramMMR=coef(MMR)
+summaryMMR=summary(MMR)
 	}else
 {wMMR=c("Missing value or infinity produced","FALSE")
 coefMMR=NA
@@ -118,7 +128,9 @@ mMMR="NA"
 RSSMMR="NA"
 FMMR="NA"
 RSDMMR="NA"
-DWMMR="NA"}
+DWMMR="NA"
+paramMMR="NA"
+summaryMMR="NA"}
 
 remove(MMR,TSSMMR,PSSMMR,RSMMR,RS1MMR)
 
@@ -127,7 +139,7 @@ MME=try(nls(trait ~ a*(1/(1+b/(c+dim)))*e^(-d*dim), data=x, na.action=na.exclude
 start=list(a=-0.06608,b=317.49, c=-328.06, d=-0.027),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(MME)=="nls"){
+if(class(MME)=="nls" & MME$convInfo$isConv==TRUE){
 wMME=c(MME$convInfo$stopMessage,MME$convInfo$isConv)
 coefMME=length(coef(MME))
 R2MME=cor(trait,predict(MME),use="complete.obs")^2
@@ -146,6 +158,8 @@ RSDMME=sqrt(RSSMME/(n-coefMME))
 RSMME=residuals(MME)
 RS1MME=as.numeric(c(residuals(MME)[-1],"NA"))
 DWMME=sum((RSMME-RS1MME)^2, na.rm=TRUE)/sum(RSMME^2, na.rm=TRUE)
+paramMME=coef(MME)
+summaryMME=summary(MME)
 	}else
 {wMME=c("Missing value or infinity produced","FALSE")
 coefMME=NA
@@ -160,7 +174,9 @@ mMME="NA"
 RSSMME="NA"
 FMME="NA"
 RSDMME="NA"
-DWMME="NA"}
+DWMME="NA"
+paramMME="NA"
+summaryMME="NA"}
 
 remove(MME,TSSMME,PSSMME,RSMME,RS1MME)
 
@@ -169,7 +185,7 @@ brody23=try(nls(trait ~ a*e^(-b*dim) , data=x, na.action=na.exclude,
 start=list(a=25.6,b=0.0015),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(brody23)=="nls"){
+if(class(brody23)=="nls" & brody23$convInfo$isConv==TRUE){
 wbrody23=c(brody23$convInfo$stopMessage,brody23$convInfo$isConv)
 coefbrody23=length(coef(brody23))
 R2brody23=cor(trait,predict(brody23),use="complete.obs")^2
@@ -188,6 +204,8 @@ RSDbrody23=sqrt(RSSbrody23/(n-coefbrody23))
 RSbrody23=residuals(brody23)
 RS1brody23=as.numeric(c(residuals(brody23)[-1],"NA"))
 DWbrody23=sum((RSbrody23-RS1brody23)^2, na.rm=TRUE)/sum(RSbrody23^2, na.rm=TRUE)
+parambrody23=coef(brody23)
+summarybrody23=summary(brody23)
 	}else
 {wbrody23=c("Missing value or infinity produced","FALSE")
 coefbrody23=NA
@@ -202,7 +220,9 @@ mbrody23="NA"
 RSSbrody23="NA"
 Fbrody23="NA"
 RSDbrody23="NA"
-DWbrody23="NA"}
+DWbrody23="NA"
+parambrody23="NA"
+summarybrody23="NA"}
 
 remove(brody23,TSSbrody23,PSSbrody23,RSbrody23,RS1brody23)
 
@@ -211,7 +231,7 @@ brody24=try(nls(trait ~ a*e^(-b*dim)-a*e^(-c*dim), data=x, na.action=na.exclude,
 start=list(a=26.127,b=0.0017,c=0.2575),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(brody24)=="nls"){
+if(class(brody24)=="nls" & brody24$convInfo$isConv==TRUE){
 wbrody24=c(brody24$convInfo$stopMessage,brody24$convInfo$isConv)
 coefbrody24=length(coef(brody24))
 R2brody24=cor(trait,predict(brody24),use="complete.obs")^2
@@ -230,7 +250,9 @@ RSDbrody24=sqrt(RSSbrody24/(n-coefbrody24))
 RSbrody24=residuals(brody24)
 RS1brody24=as.numeric(c(residuals(brody24)[-1],"NA"))
 DWbrody24=sum((RSbrody24-RS1brody24)^2, na.rm=TRUE)/sum(RSbrody24^2, na.rm=TRUE)
-	}else
+parambrody24=coef(brody24)
+summarybrody24=summary(brody24)
+  }else
 {wbrody24=c("Missing value or infinity produced","FALSE")
 coefbrody24=NA
 R2brody24="NA"
@@ -244,7 +266,9 @@ mbrody24="NA"
 RSSbrody24="NA"
 Fbrody24="NA"
 RSDbrody24="NA"
-DWbrody24="NA"}
+DWbrody24="NA"
+parambrody24="NA"
+summarybrody24="NA"}
 
 remove(brody24,TSSbrody24,PSSbrody24,RSbrody24,RS1brody24)
 
@@ -253,7 +277,7 @@ SCH=try(nls(trait ~ e^a+b/dim, data=x, na.action=na.exclude,
 start=list(a=3, b=58),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(SCH)=="nls"){
+if(class(SCH)=="nls" & SCH$convInfo$isConv==TRUE){
 wSCH=c(SCH$convInfo$stopMessage,SCH$convInfo$isConv)
 coefSCH=length(coef(SCH))
 R2SCH=cor(trait,predict(SCH),use="complete.obs")^2
@@ -272,6 +296,8 @@ RSDSCH=sqrt(RSSSCH/(n-coefSCH))
 RSSCH=residuals(SCH)
 RS1SCH=as.numeric(c(residuals(SCH)[-1],"NA"))
 DWSCH=sum((RSSCH-RS1SCH)^2, na.rm=TRUE)/sum(RSSCH^2, na.rm=TRUE)
+paramSCH=coef(SCH)
+summarySCH=summary(SCH)
 	}else
 {wSCH=c("Missing value or infinity produced","FALSE")
 coefSCH=NA
@@ -286,7 +312,9 @@ mSCH="NA"
 RSSSCH="NA"
 FSCH="NA"
 RSDSCH="NA"
-DWSCH="NA"}
+DWSCH="NA"
+paramSCH="NA"
+summarySCH="NA"}
 
 remove(SCH,TSSSCH,PSSSCH,RSSCH,RS1SCH)
 
@@ -295,7 +323,7 @@ SCHL=try(nls(trait ~ a*e^(b*dim/(dim+1)), data=x, na.action=na.exclude,
 start=list(a=264, b=-2.6),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(SCHL)=="nls"){
+if(class(SCHL)=="nls" & SCHL$convInfo$isConv==TRUE){
 wSCHL=c(SCHL$convInfo$stopMessage,SCHL$convInfo$isConv)
 coefSCHL=length(coef(SCHL))
 R2SCHL=cor(trait,predict(SCHL),use="complete.obs")^2
@@ -314,6 +342,8 @@ RSDSCHL=sqrt(RSSSCHL/(n-coefSCHL))
 RSSCHL=residuals(SCHL)
 RS1SCHL=as.numeric(c(residuals(SCHL)[-1],"NA"))
 DWSCHL=sum((RSSCHL-RS1SCHL)^2, na.rm=TRUE)/sum(RSSCHL^2, na.rm=TRUE)
+paramSCHL=coef(SCHL)
+summarySCHL=summary(SCHL)
 	}else
 {wSCHL=c("Missing value or infinity produced","FALSE")
 coefSCHL=NA
@@ -328,7 +358,9 @@ mSCHL="NA"
 RSSSCHL="NA"
 FSCHL="NA"
 RSDSCHL="NA"
-DWSCHL="NA"}
+DWSCHL="NA"
+paramSCHL="NA"
+summarySCH="NA"}
 
 remove(SCHL,TSSSCHL,PSSSCHL,RSSCHL,RS1SCHL)
 
@@ -337,7 +369,7 @@ PBE=try(nls(trait ~ a * e^((b*dim)-(c*dim^2)), data=x, na.action=na.exclude,
 start=list(a=25, b=-0.0008, c=0.000002),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(PBE)=="nls"){
+if(class(PBE)=="nls" & PBE$convInfo$isConv==TRUE){
 wPBE=c(PBE$convInfo$stopMessage,PBE$convInfo$isConv)
 coefPBE=length(coef(PBE))
 R2PBE=cor(trait,predict(PBE),use="complete.obs")^2
@@ -356,6 +388,8 @@ RSDPBE=sqrt(RSSPBE/(n-coefPBE))
 RSPBE=residuals(PBE)
 RS1PBE=as.numeric(c(residuals(PBE)[-1],"NA"))
 DWPBE=sum((RSPBE-RS1PBE)^2, na.rm=TRUE)/sum(RSPBE^2, na.rm=TRUE)
+paramPBE=coef(PBE)
+summaryPBE=summary(PBE)
 	}else
 {wPBE=c("Missing value or infinity produced","FALSE")
 coefPBE=NA
@@ -370,7 +404,9 @@ mPBE="NA"
 RSSPBE="NA"
 FPBE="NA"
 RSDPBE="NA"
-DWPBE="NA"}
+DWPBE="NA"
+paramPBE="NA"
+summaryPBE="NA"}
 
 remove(PBE,TSSPBE,PSSPBE,RSPBE,RS1PBE)
 
@@ -379,7 +415,7 @@ wood=try(nls(trait ~ a * dim^b* e^(-c*dim) , data=x, na.action=na.exclude,
 start=list(a=20.5,b=0.07,c=0.002),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(wood)=="nls"){
+if(class(wood)=="nls" & wood$convInfo$isConv==TRUE){
 wwood=c(wood$convInfo$stopMessage,wood$convInfo$isConv)
 coefwood=length(coef(wood))
 R2wood=cor(trait,predict(wood),use="complete.obs")^2
@@ -398,6 +434,8 @@ RSDwood=sqrt(RSSwood/(n-coefwood))
 RSwood=residuals(wood)
 RS1wood=as.numeric(c(residuals(wood)[-1],"NA"))
 DWwood=sum((RSwood-RS1wood)^2, na.rm=TRUE)/sum(RSwood^2, na.rm=TRUE)
+paramwood=coef(wood)
+summarywood=summary(wood)
 	}else
 {wwood=c("Missing value or infinity produced","FALSE")
 coefwood=NA
@@ -412,7 +450,9 @@ mwood="NA"
 RSSwood="NA"
 Fwood="NA"
 RSDwood="NA"
-DWwood="NA"}
+DWwood="NA"
+paramwood="NA"
+summarywood="NA"}
 
 remove(wood,TSSwood,PSSwood,RSwood,RS1wood)
 
@@ -421,7 +461,7 @@ DHA=try(nls(trait ~ a*(dim^(b*c))*e^(-c*dim), data=x, na.action=na.exclude,
 start=list(a=20.5, b=30.7, c=0.002),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(DHA)=="nls"){
+if(class(DHA)=="nls" & DHA$convInfo$isConv==TRUE){
 wDHA=c(DHA$convInfo$stopMessage,DHA$convInfo$isConv)
 coefDHA=length(coef(DHA))
 R2DHA=cor(trait,predict(DHA),use="complete.obs")^2
@@ -440,7 +480,9 @@ RSDDHA=sqrt(RSSDHA/(n-coefDHA))
 RSDHA=residuals(DHA)
 RS1DHA=as.numeric(c(residuals(DHA)[-1],"NA"))
 DWDHA=sum((RSDHA-RS1DHA)^2, na.rm=TRUE)/sum(RSDHA^2, na.rm=TRUE)
-	}else
+paramDHA=coef(DHA)
+summaryDHA=summary(DHA)
+  }else
 {wDHA=c("Missing value or infinity produced","FALSE")
 coefDHA=NA
 R2DHA="NA"
@@ -454,7 +496,9 @@ mDHA="NA"
 RSSDHA="NA"
 FDHA="NA"
 RSDDHA="NA"
-DWDHA="NA"}
+DWDHA="NA"
+paramDHA="NA"
+summaryDHA="NA"}
 
 remove(DHA,TSSDHA,PSSDHA,RSDHA,RS1DHA)
 
@@ -463,7 +507,7 @@ CB=try(nls(trait ~ a*(dim^b)*e^(-c*dim), data=x, na.action=na.exclude,
 start=list(a=20.5, b=0.07, c=0.002),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(CB)=="nls"){
+if(class(CB)=="nls" & CB$convInfo$isConv==TRUE){
 wCB=c(CB$convInfo$stopMessage,CB$convInfo$isConv)
 coefCB=length(coef(CB))
 R2CB=cor(trait,predict(CB),use="complete.obs")^2
@@ -482,6 +526,8 @@ RSDCB=sqrt(RSSCB/(n-coefCB))
 RSCB=residuals(CB)
 RS1CB=as.numeric(c(residuals(CB)[-1],"NA"))
 DWCB=sum((RSCB-RS1CB)^2, na.rm=TRUE)/sum(RSCB^2, na.rm=TRUE)
+paramCB=coef(CB)
+summaryCB=summary(CB)
 	}else
 {wCB=c("Missing value or infinity produced","FALSE")
 coefCB=NA
@@ -496,7 +542,9 @@ mCB="NA"
 RSSCB="NA"
 FCB="NA"
 RSDCB="NA"
-DWCB="NA"}
+DWCB="NA"
+paramCB="NA"
+summaryCB="NA"}
 
 remove(CB,TSSCB,PSSCB,RSCB,RS1CB)
 
@@ -505,7 +553,7 @@ QP=try(nls(trait ~ a + b*dim + c*dim^2, data=x, na.action=na.exclude,
 start=list(a=25, b=-0.02, c=-0.000015),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(QP)=="nls"){
+if(class(QP)=="nls" & QP$convInfo$isConv==TRUE){
 wQP=c(QP$convInfo$stopMessage,QP$convInfo$isConv)
 coefQP=length(coef(QP))
 R2QP=cor(trait,predict(QP),use="complete.obs")^2
@@ -524,6 +572,8 @@ RSDQP=sqrt(RSSQP/(n-coefQP))
 RSQP=residuals(QP)
 RS1QP=as.numeric(c(residuals(QP)[-1],"NA"))
 DWQP=sum((RSQP-RS1QP)^2, na.rm=TRUE)/sum(RSQP^2, na.rm=TRUE)
+paramQP=coef(QP)
+summaryQP=summary(QP)
 	}else
 {wQP=c("Missing value or infinity produced","FALSE")
 coefQP=NA
@@ -538,7 +588,9 @@ mQP="NA"
 RSSQP="NA"
 FQP="NA"
 RSDQP="NA"
-DWQP="NA"}
+DWQP="NA"
+paramQP="NA"
+summaryQP="NA"}
 
 remove(QP,TSSQP,PSSQP,RSQP,RS1QP)
 
@@ -547,7 +599,7 @@ CLD=try(nls(trait ~ a - b*dim - a*e^(-c*dim), data=x, na.action=na.exclude,
 start=list(a=25, b=0.03, c=0.28),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(CLD)=="nls"){
+if(class(CLD)=="nls" & CLD$convInfo$isConv==TRUE){
 wCLD=c(CLD$convInfo$stopMessage,CLD$convInfo$isConv)
 coefCLD=length(coef(CLD))
 R2CLD=cor(trait,predict(CLD),use="complete.obs")^2
@@ -566,6 +618,8 @@ RSDCLD=sqrt(RSSCLD/(n-coefCLD))
 RSCLD=residuals(CLD)
 RS1CLD=as.numeric(c(residuals(CLD)[-1],"NA"))
 DWCLD=sum((RSCLD-RS1CLD)^2, na.rm=TRUE)/sum(RSCLD^2, na.rm=TRUE)
+paramCLD=coef(CLD)
+summaryCLD=summary(CLD)
 	}else
 {wCLD=c("Missing value or infinity produced","FALSE")
 coefCLD=NA
@@ -580,7 +634,9 @@ mCLD="NA"
 RSSCLD="NA"
 FCLD="NA"
 RSDCLD="NA"
-DWCLD="NA"}
+DWCLD="NA"
+paramCLD="NA"
+summaryCLD="NA"}
 
 remove(CLD,TSSCLD,PSSCLD,RSCLD,RS1CLD)
 
@@ -589,7 +645,7 @@ PapBo1=try(nls(trait ~ a*dim^b/cosh(c*dim), data=x, na.action=na.exclude,
 start=list(a=24.7, b=-0.0098, c=0.0033),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(PapBo1)=="nls"){
+if(class(PapBo1)=="nls" & PapBo1$convInfo$isConv==TRUE){
 wPapBo1=c(PapBo1$convInfo$stopMessage,PapBo1$convInfo$isConv)
 coefPapBo1=length(coef(PapBo1))
 R2PapBo1=cor(trait,predict(PapBo1),use="complete.obs")^2
@@ -608,6 +664,8 @@ RSDPapBo1=sqrt(RSSPapBo1/(n-coefPapBo1))
 RSPapBo1=residuals(PapBo1)
 RS1PapBo1=as.numeric(c(residuals(PapBo1)[-1],"NA"))
 DWPapBo1=sum((RSPapBo1-RS1PapBo1)^2, na.rm=TRUE)/sum(RSPapBo1^2, na.rm=TRUE)
+paramPapBo1=coef(PapBo1)
+summaryPapBo1=summary(PapBo1)
 	}else
 {wPapBo1=c("Missing value or infinity produced","FALSE")
 coefPapBo1=NA
@@ -622,7 +680,9 @@ mPapBo1="NA"
 RSSPapBo1="NA"
 FPapBo1="NA"
 RSDPapBo1="NA"
-DWPapBo1="NA"}
+DWPapBo1="NA"
+paramPapBo1="NA"
+summaryPapBo1="NA"}
 
 remove(PapBo1,TSSPapBo1,PSSPapBo1,RSPapBo1,RS1PapBo1)
 
@@ -631,7 +691,7 @@ PapBo2=try(nls(trait ~ a*(1-e^(-b*dim))/cosh(c*dim), data=x, na.action=na.exclud
 start=list(a=23.896, b=0.398, c=0.0034),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(PapBo2)=="nls"){
+if(class(PapBo2)=="nls" & PapBo2$convInfo$isConv==TRUE){
 wPapBo2=c(PapBo2$convInfo$stopMessage,PapBo2$convInfo$isConv)
 coefPapBo2=length(coef(PapBo2))
 R2PapBo2=cor(trait,predict(PapBo2),use="complete.obs")^2
@@ -650,6 +710,8 @@ RSDPapBo2=sqrt(RSSPapBo2/(n-coefPapBo2))
 RSPapBo2=residuals(PapBo2)
 RS1PapBo2=as.numeric(c(residuals(PapBo2)[-1],"NA"))
 DWPapBo2=sum((RSPapBo2-RS1PapBo2)^2, na.rm=TRUE)/sum(RSPapBo2^2, na.rm=TRUE)
+paramPapBo2=coef(PapBo2)
+summaryPapBo2=summary(PapBo2)
 	}else
 {wPapBo2=c("Missing value or infinity produced","FALSE")
 coefPapBo2=NA
@@ -664,7 +726,9 @@ mPapBo2="NA"
 RSSPapBo2="NA"
 FPapBo2="NA"
 RSDPapBo2="NA"
-DWPapBo2="NA"}
+DWPapBo2="NA"
+paramPapBo2="NA"
+summaryPapBo2="NA"}
 
 remove(PapBo2,TSSPapBo2,PSSPapBo2,RSPapBo2,RS1PapBo2)
 
@@ -673,7 +737,7 @@ PapBo3=try(nls(trait ~ a*atan(b*dim)/cosh(c*dim), data=x, na.action=na.exclude,
 start=list(a=15.27, b=2.587, c=0.00346),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(PapBo3)=="nls"){
+if(class(PapBo3)=="nls" & PapBo3$convInfo$isConv==TRUE){
 wPapBo3=c(PapBo3$convInfo$stopMessage,PapBo3$convInfo$isConv)
 coefPapBo3=length(coef(PapBo3))
 R2PapBo3=cor(trait,predict(PapBo3),use="complete.obs")^2
@@ -692,6 +756,8 @@ RSDPapBo3=sqrt(RSSPapBo3/(n-coefPapBo3))
 RSPapBo3=residuals(PapBo3)
 RS1PapBo3=as.numeric(c(residuals(PapBo3)[-1],"NA"))
 DWPapBo3=sum((RSPapBo3-RS1PapBo3)^2, na.rm=TRUE)/sum(RSPapBo3^2, na.rm=TRUE)
+paramPapBo3=coef(PapBo3)
+summaryPapBo3=summary(PapBo3)
 	}else
 {wPapBo3=c("Missing value or infinity produced","FALSE")
 coefPapBo3=NA
@@ -706,7 +772,9 @@ mPapBo3="NA"
 RSSPapBo3="NA"
 FPapBo3="NA"
 RSDPapBo3="NA"
-DWPapBo3="NA"}
+DWPapBo3="NA"
+paramPapBo3="NA"
+summaryPapBo3="NA"}
 
 remove(PapBo3,TSSPapBo3,PSSPapBo3,RSPapBo3,RS1PapBo3)
 
@@ -736,6 +804,8 @@ RSDPapBo4=sqrt(RSSPapBo4/(n-coefPapBo4))
 RSPapBo4=residuals(PapBo4)
 RS1PapBo4=as.numeric(c(residuals(PapBo4)[-1],"NA"))
 DWPapBo4=sum((RSPapBo4-RS1PapBo4)^2, na.rm=TRUE)/sum(RSPapBo4^2, na.rm=TRUE)
+paramPapBo4=coef(PapBo4)
+summaryPapBo4=summary(PapBo4)
 	}else
 {wPapBo4=c("Missing value or infinity produced","FALSE")
 coefPapBo4=NA
@@ -750,7 +820,9 @@ mPapBo4="NA"
 RSSPapBo4="NA"
 FPapBo4="NA"
 RSDPapBo4="NA"
-DWPapBo4="NA"}
+DWPapBo4="NA"
+paramPapBo4="NA"
+summaryPapBo4="NA"}
 
 remove(PapBo4,TSSPapBo4,PSSPapBo4,RSPapBo4,RS1PapBo4)
 
@@ -759,7 +831,7 @@ PapBo6=try(nls(trait ~ a*atan(b*dim)*e^(-c*dim), data=x, na.action=na.exclude,
 start=list(a=17.25, b=0.493, c=0.0018),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(PapBo6)=="nls"){
+if(class(PapBo6)=="nls" & PapBo6$convInfo$isConv==TRUE){
 wPapBo6=c(PapBo6$convInfo$stopMessage,PapBo6$convInfo$isConv)
 coefPapBo6=length(coef(PapBo6))
 R2PapBo6=cor(trait,predict(PapBo6),use="complete.obs")^2
@@ -778,7 +850,9 @@ RSDPapBo6=sqrt(RSSPapBo6/(n-coefPapBo6))
 RSPapBo6=residuals(PapBo6)
 RS1PapBo6=as.numeric(c(residuals(PapBo6)[-1],"NA"))
 DWPapBo6=sum((RSPapBo6-RS1PapBo6)^2, na.rm=TRUE)/sum(RSPapBo6^2, na.rm=TRUE)
-}else
+paramPapBo6=coef(PapBo6)
+summaryPapBo6=summary(PapBo6)
+  }else
 {wPapBo6=c("Missing value or infinity produced","FALSE")
 coefPapBo6=NA
 R2PapBo6="NA"
@@ -792,7 +866,9 @@ mPapBo6="NA"
 RSSPapBo6="NA"
 FPapBo6="NA"
 RSDPapBo6="NA"
-DWPapBo6="NA"}
+DWPapBo6="NA"
+paramPapBo6="NA"
+summaryPapBo6="NA"}
 
 remove(PapBo6,TSSPapBo6,PSSPapBo6,RSPapBo6,RS1PapBo6)
 
@@ -801,7 +877,7 @@ GS1=try(nls(trait ~ a+b*dim^0.5 + c*log(dim), data=x, na.action=na.exclude,
 start=list(a=18.28, b=-1.58, c=4.33),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(GS1)=="nls"){
+if(class(GS1)=="nls" & GS1$convInfo$isConv==TRUE){
 wGS1=c(GS1$convInfo$stopMessage,GS1$convInfo$isConv)
 coefGS1=length(coef(GS1))
 R2GS1=cor(trait,predict(GS1),use="complete.obs")^2
@@ -820,7 +896,9 @@ RSDGS1=sqrt(RSSGS1/(n-coefGS1))
 RSGS1=residuals(GS1)
 RS1GS1=as.numeric(c(residuals(GS1)[-1],"NA"))
 DWGS1=sum((RSGS1-RS1GS1)^2, na.rm=TRUE)/sum(RSGS1^2, na.rm=TRUE)
-}else
+paramGS1=coef(GS1)
+summaryGS1=summary(GS1)
+  }else
 {wGS1=c("Missing value or infinity produced","FALSE")
 coefGS1=NA
 R2GS1="NA"
@@ -834,7 +912,9 @@ mGS1="NA"
 RSSGS1="NA"
 FGS1="NA"
 RSDGS1="NA"
-DWGS1="NA"}
+DWGS1="NA"
+paramGS1="NA"
+summaryGS1="NA"}
 
 remove(GS1,TSSGS1,PSSGS1,RSGS1,RS1GS1)
 
@@ -843,7 +923,7 @@ GS2=try(nls(trait ~ a+b*dim^0.5 + c*log(dim) + d*dim^4, data=x, na.action=na.exc
 start=list(a=17.75, b=-1.72, c=4.81, d=0.00000000007),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(GS2)=="nls"){
+if(class(GS2)=="nls" & GS2$convInfo$isConv==TRUE){
 wGS2=c(GS2$convInfo$stopMessage,GS2$convInfo$isConv)
 coefGS2=length(coef(GS2))
 R2GS2=cor(trait,predict(GS2),use="complete.obs")^2
@@ -862,7 +942,9 @@ RSDGS2=sqrt(RSSGS2/(n-coefGS2))
 RSGS2=residuals(GS2)
 RS1GS2=as.numeric(c(residuals(GS2)[-1],"NA"))
 DWGS2=sum((RSGS2-RS1GS2)^2, na.rm=TRUE)/sum(RSGS2^2, na.rm=TRUE)
-}else
+paramGS2=coef(GS2)
+summaryGS2=summary(GS2)
+  }else
 {wGS2=c("Missing value or infinity produced","FALSE")
 coefGS2=NA
 R2GS2="NA"
@@ -876,7 +958,9 @@ mGS2="NA"
 RSSGS2="NA"
 FGS2="NA"
 RSDGS2="NA"
-DWGS2="NA"}
+DWGS2="NA"
+paramGS2="NA"
+summaryGS2="NA"}
 
 remove(GS2,TSSGS2,PSSGS2,RSGS2,RS1GS2)
 
@@ -885,7 +969,7 @@ LQ=try(nls(trait ~ e^(a*(b-log(dim))^2 + c) , data=x, na.action=na.exclude,
 start=list(a=-0.08,b=3,c=3),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(LQ)=="nls"){
+if(class(LQ)=="nls" & LQ$convInfo$isConv==TRUE){
 wLQ=c(LQ$convInfo$stopMessage,LQ$convInfo$isConv)
 coefLQ=length(coef(LQ))
 R2LQ=cor(trait,predict(LQ),use="complete.obs")^2
@@ -904,7 +988,9 @@ RSDLQ=sqrt(RSSLQ/(n-coefLQ))
 RSLQ=residuals(LQ)
 RS1LQ=as.numeric(c(residuals(LQ)[-1],"NA"))
 DWLQ=sum((RSLQ-RS1LQ)^2, na.rm=TRUE)/sum(RSLQ^2, na.rm=TRUE)
-}else
+paramLQ=coef(LQ)
+summaryLQ=summary(LQ)
+  }else
 {wLQ=c("Missing value or infinity produced","FALSE")
 coefLQ=NA
 R2LQ="NA"
@@ -918,7 +1004,9 @@ mLQ="NA"
 RSSLQ="NA"
 FLQ="NA"
 RSDLQ="NA"
-DWLQ="NA"}
+DWLQ="NA"
+paramLQ="NA"
+summaryLQ="NA"}
 
 remove(LQ,TSSLQ,PSSLQ,RSLQ,RS1LQ)
 
@@ -927,7 +1015,7 @@ wil=try(nls(trait ~ a + b*e^(-k*dim) + c*dim , data=x, na.action=na.exclude,
 start=list(a=25,b=-7,c=-0.03,k=0.1),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(wil)=="nls"){
+if(class(wil)=="nls" & wil$convInfo$isConv==TRUE){
 wwil=c(wil$convInfo$stopMessage,wil$convInfo$isConv)
 coefwil=length(coef(wil))
 R2wil=cor(trait,predict(wil),use="complete.obs")^2
@@ -946,7 +1034,9 @@ RSDwil=sqrt(RSSwil/(n-coefwil))
 RSwil=residuals(wil)
 RS1wil=as.numeric(c(residuals(wil)[-1],"NA"))
 DWwil=sum((RSwil-RS1wil)^2, na.rm=TRUE)/sum(RSwil^2, na.rm=TRUE)
-}else
+paramwil=coef(wil)
+summarywil=summary(wil)
+  }else
 {wwil=c("Missing value or infinity produced","FALSE")
 coefwil=NA
 R2wil="NA"
@@ -960,7 +1050,9 @@ mwil="NA"
 RSSwil="NA"
 Fwil="NA"
 RSDwil="NA"
-DWwil="NA"}
+DWwil="NA"
+paramwil="NA"
+summarywil="NA"}
 
 remove(wil,TSSwil,PSSwil,RSwil,RS1wil)
 
@@ -969,7 +1061,7 @@ wilk=try(nls(trait ~ a + b*e^(-k*dim) + c*(dim/100) , data=x, na.action=na.exclu
 start=list(a=25,b=-7,c=-3,k=0.1),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(wilk)=="nls"){
+if(class(wilk)=="nls" & wilk$convInfo$isConv==TRUE){
 wwilk=c(wilk$convInfo$stopMessage,wilk$convInfo$isConv)
 coefwilk=length(coef(wilk))
 R2wilk=cor(trait,predict(wilk),use="complete.obs")^2
@@ -988,7 +1080,9 @@ RSDwilk=sqrt(RSSwilk/(n-coefwilk))
 RSwilk=residuals(wilk)
 RS1wilk=as.numeric(c(residuals(wilk)[-1],"NA"))
 DWwilk=sum((RSwilk-RS1wilk)^2, na.rm=TRUE)/sum(RSwilk^2, na.rm=TRUE)
-}else
+paramwilk=coef(wilk)
+summarywilk=summary(wilk)
+  }else
 {wwilk=c("Missing value or infinity produced","FALSE")
 coefwilk=NA
 R2wilk="NA"
@@ -1002,7 +1096,9 @@ mwilk="NA"
 RSSwilk="NA"
 Fwilk="NA"
 RSDwilk="NA"
-DWwilk="NA"}
+DWwilk="NA"
+paramwilk="NA"
+summarywilk="NA"}
 
 remove(wilk,TSSwilk,PSSwilk,RSwilk,RS1wilk)
 
@@ -1011,7 +1107,7 @@ wilycsml=try(nls(trait ~ a + (b-a)*(1-e^(-k*dim)) - c*dim, data=x, na.action=na.
 start=list(a=20,b=30,c=0.005,k=0.08),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(wilycsml)=="nls"){
+if(class(wilycsml)=="nls" & wilycsml$convInfo$isConv==TRUE){
 wwilycsml=c(wilycsml$convInfo$stopMessage,wilycsml$convInfo$isConv)
 coefwilycsml=length(coef(wilycsml))
 R2wilycsml=cor(trait,predict(wilycsml),use="complete.obs")^2
@@ -1030,6 +1126,8 @@ RSDwilycsml=sqrt(RSSwilycsml/(n-coefwilycsml))
 RSwilycsml=residuals(wilycsml)
 RS1wilycsml=as.numeric(c(residuals(wilycsml)[-1],"NA"))
 DWwilycsml=sum((RSwilycsml-RS1wilycsml)^2, na.rm=TRUE)/sum(RSwilycsml^2, na.rm=TRUE)
+paramwilycsml=coef(wilycsml)
+summarywilycsml=summary(wilycsml)
 	}else
 {wwilycsml=c("Missing value or infinity produced","FALSE")
 coefwilycsml=NA
@@ -1044,7 +1142,9 @@ mwilycsml="NA"
 RSSwilycsml="NA"
 Fwilycsml="NA"
 RSDwilycsml="NA"
-DWwilycsml="NA"}
+DWwilycsml="NA"
+paramwilycsml="NA"
+summarywilycsml="NA"}
 
 remove(wilycsml,TSSwilycsml,PSSwilycsml,RSwilycsml,RS1wilycsml)
 
@@ -1053,7 +1153,7 @@ BC=try(nls(trait ~ a*e^(-b*dim)+c*e^(-d*dim), data=x, na.action=na.exclude,
 start=list(a=26.6, b=0.0017, c=-7.68, d=0.08),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(BC)=="nls"){
+if(class(BC)=="nls" & BC$convInfo$isConv==TRUE){
 wBC=c(BC$convInfo$stopMessage,BC$convInfo$isConv)
 coefBC=length(coef(BC))
 R2BC=cor(trait,predict(BC),use="complete.obs")^2
@@ -1072,6 +1172,8 @@ RSDBC=sqrt(RSSBC/(n-coefBC))
 RSBC=residuals(BC)
 RS1BC=as.numeric(c(residuals(BC)[-1],"NA"))
 DWBC=sum((RSBC-RS1BC)^2, na.rm=TRUE)/sum(RSBC^2, na.rm=TRUE)
+paramBC=coef(BC)
+summaryBC=summary(BC)
 	}else
 {wBC=c("Missing value or infinity produced","FALSE")
 coefBC=NA
@@ -1086,7 +1188,9 @@ mBC="NA"
 RSSBC="NA"
 FBC="NA"
 RSDBC="NA"
-DWBC="NA"}
+DWBC="NA"
+paramBC="NA"
+summaryBC="NA"}
 
 remove(BC,TSSBC,PSSBC,RSBC,RS1BC)
 
@@ -1095,7 +1199,7 @@ DJK=try(nls(trait ~ a * e^(b*(1-e^(-c*dim))  /  c - (d*dim)), data=x, na.action=
 start=list(a=19, b=0.027, c=0.08, d=0.0017),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(DJK)=="nls"){
+if(class(DJK)=="nls" & DJK$convInfo$isConv==TRUE){
 wDJK=c(DJK$convInfo$stopMessage,DJK$convInfo$isConv)
 coefDJK=length(coef(DJK))
 R2DJK=cor(trait,predict(DJK),use="complete.obs")^2
@@ -1114,7 +1218,9 @@ RSDDJK=sqrt(RSSDJK/(n-coefDJK))
 RSDJK=residuals(DJK)
 RS1DJK=as.numeric(c(residuals(DJK)[-1],"NA"))
 DWDJK=sum((RSDJK-RS1DJK)^2, na.rm=TRUE)/sum(RSDJK^2, na.rm=TRUE)
-}else
+paramDJK=coef(DJK)
+summaryDJK=summary(DJK)
+  }else
 {wDJK=c("Missing value or infinity produced","FALSE")
 coefDJK=NA
 R2DJK="NA"
@@ -1128,7 +1234,9 @@ mDJK="NA"
 RSSDJK="NA"
 FDJK="NA"
 RSDDJK="NA"
-DWDJK="NA"}
+DWDJK="NA"
+paramDJK="NA"
+summaryDJK="NA"}
 
 remove(DJK,TSSDJK,PSSDJK,RSDJK,RS1DJK)
 
@@ -1137,7 +1245,7 @@ MG2=try(nls(trait ~ e^(a + b*((dim-150)/100) + c*((dim-150)/100)^2 + d/dim), dat
 start=list(a=3, b=-0.18, c=0.002, d=-1.4),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(MG2)=="nls"){
+if(class(MG2)=="nls" & MG2$convInfo$isConv==TRUE){
 wMG2=c(MG2$convInfo$stopMessage,MG2$convInfo$isConv)
 coefMG2=length(coef(MG2))
 R2MG2=cor(trait,predict(MG2),use="complete.obs")^2
@@ -1156,7 +1264,9 @@ RSDMG2=sqrt(RSSMG2/(n-coefMG2))
 RSMG2=residuals(MG2)
 RS1MG2=as.numeric(c(residuals(MG2)[-1],"NA"))
 DWMG2=sum((RSMG2-RS1MG2)^2, na.rm=TRUE)/sum(RSMG2^2, na.rm=TRUE)
-}else
+paramMG2=coef(MG2)
+summaryMG2=summary(MG2)
+  }else
 {wMG2=c("Missing value or infinity produced","FALSE")
 coefMG2=NA
 R2MG2="NA"
@@ -1170,7 +1280,9 @@ mMG2="NA"
 RSSMG2="NA"
 FMG2="NA"
 RSDMG2="NA"
-DWMG2="NA"}
+DWMG2="NA"
+paramMG2="NA"
+summaryMG2="NA"}
 
 remove(MG2,TSSMG2,PSSMG2,RSMG2,RS1MG2)
 
@@ -1179,7 +1291,7 @@ MG4=try(nls(trait ~ a*e^(b * ((dim-150)/100)/2 + c/dim - d*(1+((dim-21.4)/100)/2
 data=x, na.action=na.exclude, start=list(a=20.5, b=-0.38, c=-1.45, d=-0.005),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(MG4)=="nls"){
+if(class(MG4)=="nls" & MG4$convInfo$isConv==TRUE){
 wMG4=c(MG4$convInfo$stopMessage,MG4$convInfo$isConv)
 coefMG4=length(coef(MG4))
 R2MG4=cor(trait,predict(MG4),use="complete.obs")^2
@@ -1198,7 +1310,9 @@ RSDMG4=sqrt(RSSMG4/(n-coefMG4))
 RSMG4=residuals(MG4)
 RS1MG4=as.numeric(c(residuals(MG4)[-1],"NA"))
 DWMG4=sum((RSMG4-RS1MG4)^2, na.rm=TRUE)/sum(RSMG4^2, na.rm=TRUE)
-}else
+paramMG4=coef(MG4)
+summaryMG4=summary(MG4)
+  }else
 {wMG4=c("Missing value or infinity produced","FALSE")
 coefMG4=NA
 R2MG4="NA"
@@ -1212,7 +1326,9 @@ mMG4="NA"
 RSSMG4="NA"
 FMG4="NA"
 RSDMG4="NA"
-DWMG4="NA"}
+DWMG4="NA"
+paramMG4="NA"
+summaryMG4="NA"}
 
 remove(MG4,TSSMG4,PSSMG4,RSMG4,RS1MG4)
 
@@ -1221,7 +1337,7 @@ MG=try(nls(trait ~ e^(a - b*((dim-150)/100) + c*((dim-150)/100)^2 + d/dim), data
 start=list(a=3, b=0.18, c=0.002, d=-1.4),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(MG)=="nls"){
+if(class(MG)=="nls" & MG$convInfo$isConv==TRUE){
 wMG=c(MG$convInfo$stopMessage,MG$convInfo$isConv)
 coefMG=length(coef(MG))
 R2MG=cor(trait,predict(MG),use="complete.obs")^2
@@ -1240,7 +1356,9 @@ RSDMG=sqrt(RSSMG/(n-coefMG))
 RSMG=residuals(MG)
 RS1MG=as.numeric(c(residuals(MG)[-1],"NA"))
 DWMG=sum((RSMG-RS1MG)^2, na.rm=TRUE)/sum(RSMG^2, na.rm=TRUE)
-}else
+paramMG=coef(MG)
+summaryMG=summary(MG)
+  }else
 {wMG=c("Missing value or infinity produced","FALSE")
 coefMG=NA
 R2MG="NA"
@@ -1254,7 +1372,9 @@ mMG="NA"
 RSSMG="NA"
 FMG="NA"
 RSDMG="NA"
-DWMG="NA"}
+DWMG="NA"
+paramMG="NA"
+summaryMG="NA"}
 
 remove(MG,TSSMG,PSSMG,RSMG,RS1MG)
 
@@ -1263,7 +1383,7 @@ KHN=try(nls(trait ~ a+b*dim + c*dim^2 + d*dim^3 + f*log(dim), data=x, na.action=
 start=list(a=15, b=-0.15, c=0.00043, d=0.0000005, f=4.05),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(KHN)=="nls"){
+if(class(KHN)=="nls" & KHN$convInfo$isConv==TRUE){
 wKHN=c(KHN$convInfo$stopMessage,KHN$convInfo$isConv)
 coefKHN=length(coef(KHN))
 R2KHN=cor(trait,predict(KHN),use="complete.obs")^2
@@ -1282,7 +1402,9 @@ RSDKHN=sqrt(RSSKHN/(n-coefKHN))
 RSKHN=residuals(KHN)
 RS1KHN=as.numeric(c(residuals(KHN)[-1],"NA"))
 DWKHN=sum((RSKHN-RS1KHN)^2, na.rm=TRUE)/sum(RSKHN^2, na.rm=TRUE)
-}else
+paramKHN=coef(KHN)
+summaryKHN=summary(KHN)
+  }else
 {wKHN=c("Missing value or infinity produced","FALSE")
 coefKHN=NA
 R2KHN="NA"
@@ -1296,16 +1418,18 @@ mKHN="NA"
 RSSKHN="NA"
 FKHN="NA"
 RSDKHN="NA"
-DWKHN="NA"}
+DWKHN="NA"
+paramKHN="NA"
+summaryKHN="NA"}
 
 remove(KHN,TSSKHN,PSSKHN,RSKHN,RS1KHN)
 
 # (24) Ali and Schaeffer
-AS=try(nls(trait ~ a + b*(dim/340) + c*(dim^2/340) + d*log(340/dim) + e*log(340/dim)^2, data=x, na.action=na.exclude,
-start=list(a=19, b=-5, c=0.003, d=5.3, e=-1.1),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
+AS=try(nls(trait ~ a + b*(dim/340) + c*(dim^2/340) + d*log(340/dim) + f*log(340/dim)^2, data=x, na.action=na.exclude,
+start=list(a=19, b=-5, c=0.003, d=5.3, f=-1.1),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(AS)=="nls"){
+if(class(AS)=="nls" & AS$convInfo$isConv==TRUE){
 wAS=c(AS$convInfo$stopMessage,AS$convInfo$isConv)
 coefAS=length(coef(AS))
 R2AS=cor(trait,predict(AS),use="complete.obs")^2
@@ -1324,7 +1448,9 @@ RSDAS=sqrt(RSSAS/(n-coefAS))
 RSAS=residuals(AS)
 RS1AS=as.numeric(c(residuals(AS)[-1],"NA"))
 DWAS=sum((RSAS-RS1AS)^2, na.rm=TRUE)/sum(RSAS^2, na.rm=TRUE)
-}else
+paramAS=coef(AS)
+summaryAS=summary(AS)
+  }else
 {wAS=c("Missing value or infinity produced","FALSE")
 coefAS=NA
 R2AS="NA"
@@ -1338,16 +1464,18 @@ mAS="NA"
 RSSAS="NA"
 FAS="NA"
 RSDAS="NA"
-DWAS="NA"}
+DWAS="NA"
+paramAS="NA"
+summaryAS="NA"}
 
 remove(AS,TSSAS,PSSAS,RSAS,RS1AS)
 
 # (25) Fractional Polynomial (Elvira et al. 2013)
-FRP=try(nls(trait ~ a + b*dim + c*log(dim)+ d*dim^0.5 + e*dim^2, data=x, na.action=na.exclude,
-start=list(a=15, b=-0.08, c=8, d=-3, e=-0.00004),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
+FRP=try(nls(trait ~ a + b*dim + c*log(dim)+ d*dim^0.5 + f*dim^2, data=x, na.action=na.exclude,
+start=list(a=15, b=-0.08, c=8, d=-3, f=-0.00004),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(FRP)=="nls"){
+if(class(FRP)=="nls" & FRP$convInfo$isConv==TRUE){
 wFRP=c(FRP$convInfo$stopMessage,FRP$convInfo$isConv)
 coefFRP=length(coef(FRP))
 R2FRP=cor(trait,predict(FRP),use="complete.obs")^2
@@ -1366,7 +1494,9 @@ RSDFRP=sqrt(RSSFRP/(n-coefFRP))
 RSFRP=residuals(FRP)
 RS1FRP=as.numeric(c(residuals(FRP)[-1],"NA"))
 DWFRP=sum((RSFRP-RS1FRP)^2, na.rm=TRUE)/sum(RSFRP^2, na.rm=TRUE)
-}else
+paramFRP=coef(FRP)
+summaryFRP=summary(FRP)
+  }else
 {wFRP=c("Missing value or infinity produced","FALSE")
 coefFRP=NA
 R2FRP="NA"
@@ -1380,7 +1510,9 @@ mFRP="NA"
 RSSFRP="NA"
 FFRP="NA"
 RSDFRP="NA"
-DWFRP="NA"}
+DWFRP="NA"
+paramFRP="NA"
+summaryFRP="NA"}
 
 remove(FRP,TSSFRP,PSSFRP,RSFRP,RS1FRP)
 
@@ -1389,7 +1521,7 @@ PTmult=try(nls(trait ~ a/(1+((1-0.999999)/0.999999)*e^(-0.1*dim))  *  (2-e^(-b*d
 start=list(a=25, b=-0.001),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(PTmult)=="nls"){
+if(class(PTmult)=="nls" & PTmult$convInfo$isConv==TRUE){
 wPTmult=c(PTmult$convInfo$stopMessage,PTmult$convInfo$isConv)
 coefPTmult=length(coef(PTmult))
 R2PTmult=cor(trait,predict(PTmult),use="complete.obs")^2
@@ -1408,7 +1540,9 @@ RSDPTmult=sqrt(RSSPTmult/(n-coefPTmult))
 RSPTmult=residuals(PTmult)
 RS1PTmult=as.numeric(c(residuals(PTmult)[-1],"NA"))
 DWPTmult=sum((RSPTmult-RS1PTmult)^2, na.rm=TRUE)/sum(RSPTmult^2, na.rm=TRUE)
-}else
+paramPTmult=coef(PTmult)
+summaryPTmult=summary(PTmult)
+  }else
 {wPTmult=c("Missing value or infinity produced","FALSE")
 coefPTmult=NA
 R2PTmult="NA"
@@ -1422,7 +1556,9 @@ mPTmult="NA"
 RSSPTmult="NA"
 FPTmult="NA"
 RSDPTmult="NA"
-DWPTmult="NA"}
+DWPTmult="NA"
+paramPTmult="NA"
+summaryPTmult="NA"}
 
 remove(PTmult,TSSPTmult,PSSPTmult,RSPTmult,RS1PTmult)
 
@@ -1431,7 +1567,7 @@ PTmod=try(nls(trait ~ a/((1+b*(e^(-c*dim))))*(2-e^(-d*dim)), data=x, na.action=n
 start=list(a=25, b=0.36, c=0.13, d=-0.001),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(PTmod)=="nls"){
+if(class(PTmod)=="nls" & PTmod$convInfo$isConv==TRUE){
 wPTmod=c(PTmod$convInfo$stopMessage,PTmod$convInfo$isConv)
 coefPTmod=length(coef(PTmod))
 R2PTmod=cor(trait,predict(PTmod),use="complete.obs")^2
@@ -1450,7 +1586,9 @@ RSDPTmod=sqrt(RSSPTmod/(n-coefPTmod))
 RSPTmod=residuals(PTmod)
 RS1PTmod=as.numeric(c(residuals(PTmod)[-1],"NA"))
 DWPTmod=sum((RSPTmod-RS1PTmod)^2, na.rm=TRUE)/sum(RSPTmod^2, na.rm=TRUE)
-}else
+paramPTmod=coef(PTmod)
+summaryPTmod=summary(PTmod)
+  }else
 {wPTmod=c("Missing value or infinity produced","FALSE")
 coefPTmod=NA
 R2PTmod="NA"
@@ -1464,7 +1602,9 @@ mPTmod="NA"
 RSSPTmod="NA"
 FPTmod="NA"
 RSDPTmod="NA"
-DWPTmod="NA"}
+DWPTmod="NA"
+paramPTmod="NA"
+summaryPTmod="NA"}
 
 remove(PTmod,TSSPTmod,PSSPTmod,RSPTmod,RS1PTmod)
 
@@ -1473,7 +1613,7 @@ MonoG=try(nls(trait ~ a*b*(1-tanh(b*(dim-c))), data=x, na.action=na.exclude,
 start=list(a=7703, b=0.002, c=277),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(MonoG)=="nls"){
+if(class(MonoG)=="nls" & MonoG$convInfo$isConv==TRUE){
 wMonoG=c(MonoG$convInfo$stopMessage,MonoG$convInfo$isConv)
 coefMonoG=length(coef(MonoG))
 R2MonoG=cor(trait,predict(MonoG),use="complete.obs")^2
@@ -1492,7 +1632,9 @@ RSDMonoG=sqrt(RSSMonoG/(n-coefMonoG))
 RSMonoG=residuals(MonoG)
 RS1MonoG=as.numeric(c(residuals(MonoG)[-1],"NA"))
 DWMonoG=sum((RSMonoG-RS1MonoG)^2, na.rm=TRUE)/sum(RSMonoG^2, na.rm=TRUE)
-}else
+paramMonoG=coef(MonoG)
+summaryMonoG=summary(MonoG)
+  }else
 {wMonoG=c("Missing value or infinity produced","FALSE")
 coefMonoG=NA
 R2MonoG="NA"
@@ -1506,7 +1648,9 @@ mMonoG="NA"
 RSSMonoG="NA"
 FMonoG="NA"
 RSDMonoG="NA"
-DWMonoG="NA"}
+DWMonoG="NA"
+paramMonoG="NA"
+summaryMonoG="NA"}
 
 remove(MonoG,TSSMonoG,PSSMonoG,RSMonoG,RS1MonoG)
 
@@ -1515,7 +1659,7 @@ MonoGpw=try(nls(trait ~ a*(1-tanh(b*(dim^k-c))^2), data=x, na.action=na.exclude,
 start=list(a=24.5707, b=0.6292, c=1.9977, k=0.1978),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(MonoGpw)=="nls"){
+if(class(MonoGpw)=="nls" & MonoGpw$convInfo$isConv==TRUE){
 wMonoGpw=c(MonoGpw$convInfo$stopMessage,MonoGpw$convInfo$isConv)
 coefMonoGpw=length(coef(MonoGpw))
 R2MonoGpw=cor(trait,predict(MonoGpw),use="complete.obs")^2
@@ -1534,7 +1678,9 @@ RSDMonoGpw=sqrt(RSSMonoGpw/(n-coefMonoGpw))
 RSMonoGpw=residuals(MonoGpw)
 RS1MonoGpw=as.numeric(c(residuals(MonoGpw)[-1],"NA"))
 DWMonoGpw=sum((RSMonoGpw-RS1MonoGpw)^2, na.rm=TRUE)/sum(RSMonoGpw^2, na.rm=TRUE)
-}else
+paramMonoGpw=coef(MonoGpw)
+summaryMonoGpw=summary(MonoGpw)
+  }else
 {wMonoGpw=c("Missing value or infinity produced","FALSE")
 coefMonoGpw=NA
 R2MonoGpw="NA"
@@ -1548,7 +1694,9 @@ mMonoGpw="NA"
 RSSMonoGpw="NA"
 FMonoGpw="NA"
 RSDMonoGpw="NA"
-DWMonoGpw="NA"}
+DWMonoGpw="NA"
+paramMonoGpw="NA"
+summaryMonoGpw="NA"}
 
 remove(MonoGpw,TSSMonoGpw,PSSMonoGpw,RSMonoGpw,RS1MonoGpw)
 
@@ -1557,7 +1705,7 @@ DiG=try(nls(trait ~ a*b*(1-tanh(b*(dim-c))^2)+d*f*(1-tanh(f*(dim-g))^2), data=x,
 start=list(a=353.8,b=0.016,c=36.3, d=7371, f=0.003, g=113.5),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(DiG)=="nls"){
+if(class(DiG)=="nls" & DiG$convInfo$isConv==TRUE){
 wDiG=c(DiG$convInfo$stopMessage,DiG$convInfo$isConv)
 coefDiG=length(coef(DiG))
 R2DiG=cor(trait,predict(DiG),use="complete.obs")^2
@@ -1576,7 +1724,9 @@ RSDDiG=sqrt(RSSDiG/(n-coefDiG))
 RSDiG=residuals(DiG)
 RS1DiG=as.numeric(c(residuals(DiG)[-1],"NA"))
 DWDiG=sum((RSDiG-RS1DiG)^2, na.rm=TRUE)/sum(RSDiG^2, na.rm=TRUE)
-}else
+paramDiG=coef(DiG)
+summaryDiG=summary(DiG)
+  }else
 {wDiG=c("Missing value or infinity produced","FALSE")
 coefDiG=NA
 R2DiG="NA"
@@ -1590,7 +1740,9 @@ mDiG="NA"
 RSSDiG="NA"
 FDiG="NA"
 RSDDiG="NA"
-DWDiG="NA"}
+DWDiG="NA"
+paramDiG="NA"
+summaryDiG="NA"}
 
 remove(DiG,TSSDiG,PSSDiG,RSDiG,RS1DiG)
 
@@ -1599,7 +1751,7 @@ DiGpw=try(nls(trait ~ a*b*(1-tanh(b*(dim^k-c))^2)+d*f*(1-tanh(f*(dim-g))^2), dat
 start=list(a=15.99,b=0.3351,c=4.693, d=8687, f=0.00226, g=80.33, k=0.435),control=list(maxiter=100,warnOnly=TRUE)),silent=TRUE)
 
 #options(warn=-1)
-if(class(DiGpw)=="nls"){
+if(class(DiGpw)=="nls" & DiGpw$convInfo$isConv==TRUE){
 wDiGpw=c(DiGpw$convInfo$stopMessage,DiGpw$convInfo$isConv)
 coefDiGpw=length(coef(DiGpw))
 R2DiGpw=cor(trait,predict(DiGpw),use="complete.obs")^2
@@ -1618,7 +1770,9 @@ RSDDiGpw=sqrt(RSSDiGpw/(n-coefDiGpw))
 RSDiGpw=residuals(DiGpw)
 RS1DiGpw=as.numeric(c(residuals(DiGpw)[-1],"NA"))
 DWDiGpw=sum((RSDiGpw-RS1DiGpw)^2, na.rm=TRUE)/sum(RSDiGpw^2, na.rm=TRUE)
-}else
+paramDiGpw=coef(DiGpw)
+summaryDiGpw=summary(DiGpw)
+  }else
 {wDiGpw=c("Missing value or infinity produced","FALSE")
 coefDiGpw=NA
 R2DiGpw="NA"
@@ -1632,7 +1786,9 @@ mDiGpw="NA"
 RSSDiGpw="NA"
 FDiGpw="NA"
 RSDDiGpw="NA"
-DWDiGpw="NA"}
+DWDiGpw="NA"
+paramDiGpw="NA"
+summaryDiGpw="NA"}
 
 remove(DiGpw,TSSDiGpw,PSSDiGpw,RSDiGpw,RS1DiGpw)
 
@@ -1664,7 +1820,9 @@ RSDlegpol3=sqrt(RSSlegpol3/(n-coeflegpol3))
 RSlegpol3=residuals(legpol3)
 RS1legpol3=as.numeric(c(residuals(legpol3)[-1],"NA"))
 DWlegpol3=sum((RSlegpol3-RS1legpol3)^2, na.rm=TRUE)/sum(RSlegpol3^2, na.rm=TRUE)
-}else
+paramleg3=coef(legpol3)
+summaryleg3=summary(legpol3)
+  }else
 {wlegpol3=c("Missing value or infinity produced","FALSE")
 coeflegpol3=NA
 R2legpol3="NA"
@@ -1678,7 +1836,9 @@ mlegpol3="NA"
 RSSlegpol3="NA"
 Flegpol3="NA"
 RSDlegpol3="NA"
-DWlegpol3="NA"}
+DWlegpol3="NA"
+paramleg3="NA"
+summaryleg3="NA"}
 
 remove(legpol3,TSSlegpol3,PSSlegpol3,RSlegpol3,RS1legpol3)
 
@@ -1710,7 +1870,9 @@ RSDlegpol4=sqrt(RSSlegpol4/(n-coeflegpol4))
 RSlegpol4=residuals(legpol4)
 RS1legpol4=as.numeric(c(residuals(legpol4)[-1],"NA"))
 DWlegpol4=sum((RSlegpol4-RS1legpol4)^2, na.rm=TRUE)/sum(RSlegpol4^2, na.rm=TRUE)
-}else
+paramleg4=coef(legpol4)
+summaryleg4=summary(legpol4)
+  }else
 {wlegpol4=c("Missing value or infinity produced","FALSE")
 coeflegpol4=NA
 R2legpol4="NA"
@@ -1724,7 +1886,9 @@ mlegpol4="NA"
 RSSlegpol4="NA"
 Flegpol4="NA"
 RSDlegpol4="NA"
-DWlegpol4="NA"}
+DWlegpol4="NA"
+paramleg4="NA"
+summaryleg4="NA"}
 
 remove(legpol4,TSSlegpol4,PSSlegpol4,RSlegpol4,RS1legpol4)
 
@@ -1738,7 +1902,7 @@ legpolWil=try(nls(trait ~ a*leg4[,1]+b*leg4[,2]+c*leg4[,3]+d*e^(-k*dim), data=x,
 start=list(a=-0.8, b=-0.6,c=0.1,d=25.7, k=0.002)),silent=TRUE)
 
 #options(warn=-1)
-if(class(legpolWil)=="nls"){
+if(class(legpolWil)=="nls" & legpolWil$convInfo$isConv==TRUE){
 wlegpolWil=c("converged","TRUE")
 coeflegpolWil=length(coef(legpolWil))
 R2legpolWil=cor(trait,predict(legpolWil),use="complete.obs")^2
@@ -1757,7 +1921,9 @@ RSDlegpolWil=sqrt(RSSlegpolWil/(n-coeflegpolWil))
 RSlegpolWil=residuals(legpolWil)
 RS1legpolWil=as.numeric(c(residuals(legpolWil)[-1],"NA"))
 DWlegpolWil=sum((RSlegpolWil-RS1legpolWil)^2, na.rm=TRUE)/sum(RSlegpolWil^2, na.rm=TRUE)
-}else
+parampolWil=coef(legpolWil)
+summarypolWil=summary(legpolWil)
+  }else
 {wlegpolWil=c("Missing value or infinity produced","FALSE")
 coeflegpolWil=NA
 R2legpolWil="NA"
@@ -1771,7 +1937,9 @@ mlegpolWil="NA"
 RSSlegpolWil="NA"
 FlegpolWil="NA"
 RSDlegpolWil="NA"
-DWlegpolWil="NA"}
+DWlegpolWil="NA"
+parampolWil="NA"
+summarypolWil="NA"}
 
 remove(legpolWil,TSSlegpolWil,PSSlegpolWil,RSlegpolWil,RS1legpolWil)
 
@@ -1798,7 +1966,9 @@ RSDcubsplin3=sqrt(RSScubsplin3/(n-coefcubsplin3))
 RScubsplin3=residuals(cubsplin3)
 RS1cubsplin3=as.numeric(c(residuals(cubsplin3)[-1],"NA"))
 DWcubsplin3=sum((RScubsplin3-RS1cubsplin3)^2, na.rm=TRUE)/sum(RScubsplin3^2, na.rm=TRUE)
-}else
+paramcubsplin3=coef(cubsplin3)
+summarycubsplin3=summary(cubsplin3)
+  }else
 {wcubsplin3=c("Missing value or infinity produced","FALSE")
 coefcubsplin3=NA
 R2cubsplin3="NA"
@@ -1812,7 +1982,9 @@ mcubsplin3="NA"
 RSScubsplin3="NA"
 Fcubsplin3="NA"
 RSDcubsplin3="NA"
-DWcubsplin3="NA"}
+DWcubsplin3="NA"
+paramcubsplin3="NA"
+summarycubsplin3="NA"}
 
 remove(cubsplin3,TSScubsplin3,PSScubsplin3,RScubsplin3,RS1cubsplin3)
 
@@ -1839,7 +2011,9 @@ RSDcubsplin4=sqrt(RSScubsplin4/(n-coefcubsplin4))
 RScubsplin4=residuals(cubsplin4)
 RS1cubsplin4=as.numeric(c(residuals(cubsplin4)[-1],"NA"))
 DWcubsplin4=sum((RScubsplin4-RS1cubsplin4)^2, na.rm=TRUE)/sum(RScubsplin4^2, na.rm=TRUE)
-}else
+paramcubsplin4=coef(cubsplin4)
+summarycubsplin4=summary(cubsplin4)
+  }else
 {wcubsplin4=c("Missing value or infinity produced","FALSE")
 coefcubsplin4=NA
 R2cubsplin4="NA"
@@ -1853,7 +2027,9 @@ mcubsplin4="NA"
 RSScubsplin4="NA"
 Fcubsplin4="NA"
 RSDcubsplin4="NA"
-DWcubsplin4="NA"}
+DWcubsplin4="NA"
+paramcubsplin4="NA"
+summarycubsplin4="NA"}
 
 remove(cubsplin4,TSScubsplin4,PSScubsplin4,RScubsplin4,RS1cubsplin4)
 
@@ -1880,7 +2056,9 @@ RSDcubsplin5=sqrt(RSScubsplin5/(n-coefcubsplin5))
 RScubsplin5=residuals(cubsplin5)
 RS1cubsplin5=as.numeric(c(residuals(cubsplin5)[-1],"NA"))
 DWcubsplin5=sum((RScubsplin5-RS1cubsplin5)^2, na.rm=TRUE)/sum(RScubsplin5^2, na.rm=TRUE)
-}else
+paramcubsplin5=coef(cubsplin5)
+summarycubsplin5=summary(cubsplin5)
+  }else
 {wcubsplin5=c("Missing value or infinity produced","FALSE")
 coefcubsplin5=NA
 R2cubsplin5="NA"
@@ -1894,7 +2072,9 @@ mcubsplin5="NA"
 RSScubsplin5="NA"
 Fcubsplin5="NA"
 RSDcubsplin5="NA"
-DWcubsplin5="NA"}
+DWcubsplin5="NA"
+paramcubsplin5="NA"
+summarycubsplin5="NA"}
 
 remove(cubsplin5,TSScubsplin5,PSScubsplin5,RScubsplin5,RS1cubsplin5)
 
@@ -1921,7 +2101,9 @@ RSDcubsplindef=sqrt(RSScubsplindef/(n-coefcubsplindef))
 RScubsplindef=residuals(cubsplindef)
 RS1cubsplindef=as.numeric(c(residuals(cubsplindef)[-1],"NA"))
 DWcubsplindef=sum((RScubsplindef-RS1cubsplindef)^2, na.rm=TRUE)/sum(RScubsplindef^2, na.rm=TRUE)
-}else
+paramcubsplindef=coef(cubsplindef)
+summarycubsplindef=summary(cubsplindef)
+  }else
 {wcubsplindef=c("Missing value or infinity produced","FALSE")
 coefcubsplindef=NA
 R2cubsplindef="NA"
@@ -1935,7 +2117,9 @@ mcubsplindef="NA"
 RSScubsplindef="NA"
 Fcubsplindef="NA"
 RSDcubsplindef="NA"
-DWcubsplindef="NA"}
+DWcubsplindef="NA"
+paramcubsplindef="NA"
+summarycubsplindef="NA"}
 
 remove(cubsplindef,TSScubsplindef,PSScubsplindef,RScubsplindef,RS1cubsplindef)
 
@@ -2876,6 +3060,137 @@ ModelPar2[44,]=if(warning[44,2]=="TRUE"){ModelPar2[44,]} else {"Error"}
 ModelPar2[45,]=if(warning[45,2]=="TRUE"){ModelPar2[45,]} else {"Error"}
 
 
+#################################################################
+##################### Model Parameters ##########################
+
+length(paramMM)=7
+length(paramMMR)=7
+length(paramMME)=7
+length(parambrody23)=7
+length(parambrody24)=7
+length(paramSCH)=7
+length(paramSCHL)=7
+length(paramPBE)=7
+length(paramwood)=7
+length(paramDHA)=7
+length(paramCB)=7
+length(paramQP)=7
+length(paramCLD)=7
+length(paramPapBo1)=7
+length(paramPapBo2)=7
+length(paramPapBo3)=7
+length(paramPapBo4)=7
+length(paramPapBo6)=7
+length(paramGS1)=7
+length(paramGS2)=7
+length(paramLQ)=7
+paramwil2=c(paramwil[1:3],"NA","NA","NA",paramwil[4])
+paramwilk2=c(paramwilk[1:3],"NA","NA","NA",paramwilk[4])
+paramwilycsml2=c(paramwilycsml[1:3],"NA","NA","NA",paramwilycsml[4])
+length(paramBC)=7
+length(paramDJK)=7
+length(paramMG2)=7
+length(paramMG4)=7
+length(paramMG)=7
+length(paramKHN)=7
+length(paramAS)=7
+length(paramFRP)=7
+length(paramPTmult)=7
+length(paramPTmod)=7
+length(paramMonoG)=7
+paramMonoGpw2=c(paramMonoGpw[1:3],"NA","NA","NA",paramMonoGpw[4])
+length(paramDiG)=7
+length(paramDiGpw)=7
+length(parampolWil)=7
+
+length(paramleg3)=5
+length(paramleg4)=5
+
+length(paramcubsplin3)=7
+length(paramcubsplin4)=7
+length(paramcubsplin5)=7
+length(paramcubsplindef)=7
+
+paramabcdfgk=t(cbind(
+  paramMM,paramMMR,paramMME,parambrody23,
+  parambrody24,paramSCH,paramSCHL,paramPBE,
+  paramwood,paramDHA,paramCB,paramQP,
+  paramCLD,paramPapBo1,paramPapBo2,paramPapBo3,
+  paramPapBo4,paramPapBo6,paramGS1,paramGS2,
+  paramLQ,paramwil2,paramwilk2,paramwilycsml2,
+  paramBC,paramDJK,paramMG2,paramMG4,
+  paramMG,paramKHN,paramAS,paramFRP,
+  paramPTmult,paramPTmod,paramMonoG,paramMonoGpw2,
+  paramDiG,paramDiGpw,parampolWil
+))
+
+paramleg=t(cbind(
+  paramleg3,paramleg4
+))
+
+paramspline=t(cbind(
+  paramcubsplin3,paramcubsplin4,
+  paramcubsplin5,paramcubsplindef
+))
+
+rownames(paramabcdfgk)=c(
+  "(1) Michaelis-Menten",
+  "(1a) Michaelis-Menten (Rook)",
+  "(1b) Michaelis-Menten + Exponential (Rook)",
+  "(2) Brody 1923",
+  "(3) Brody 1924",
+  "(4) Schumacher  ",
+  "(4a) Schumacher (Lopez)",
+  "(5) Parabolic Exponential (Sikka, Adediran)",
+  "(6) Wood",
+  "(6a) Wood (Dhanoa)",
+  "(6b) Wood (Cappio-Borlino)",
+  "(7) Quadratic Polynomial (Dave)",
+  "(8) Cobby & Le Du",
+  "(9) Papajcsik and Bodero 1",
+  "(10) Papajcsik and Bodero 2",
+  "(11) Papajcsik and Bodero 3",
+  "(12) Papajcsik and Bodero 4",
+  "(13) Papajcsik and Bodero 6",
+  "(14) Mixed log model 1 (Guo & Swalve)",
+  "(15) Mixed log model 3 (Guo & Swalve)",
+  "(16) Log-quadratic (Adediran)",
+  "(17) Wilmink",
+  "(17a) Wilmink (Kheidirabadi)",
+  "(17b) Wilmink (Laurenson & Strucken)",
+  "(18) Bicompartemental (Ferguson & Boston)",
+  "(19) Dijkstra",
+  "(20) Morant & Gnanasakthy (Pollott)",
+  "(21) Morant & Gnanasakthy (Vargas)",
+  "(22) Morant & Gnanasakthy (Adediran)",
+  "(23) Khandekar (Guo & Swalve)",
+  "(24) Ali & Schaeffer",
+  "(25) Fractional Polynomial (Elvira)",
+  "(26) Pollott multiplicative reduced (Elvira)",
+  "(27) Pollott modified (Adediran)",
+  "(28) Monophasic Grossman",
+  "(29) Monophasic Grossman power (Weigel, Sherchand)",
+  "(30) Diphasic Grossman",
+  "(31) Diphasic Grossman power (Weigel, Sherchand)",
+  "(34) Legendre + Wilmink (Lopez)"
+)
+colnames(paramabcdfgk)=c("a","b","c","d","f","g","k")
+
+rownames(paramleg)=c(
+  "(32) Legendre Polynomial 3th (Kirkpatrick)",
+  "(33) Legendre Polynomial 4th (Kirkpatrick)"
+)
+colnames(paramleg)=c("Intercept","leg1","leg2","leg3","leg4")
+
+rownames(paramspline)=c(
+  "(35) Natural Cubic Spline (3 percentiles)",
+  "(36) Natural Cubic Spline (4 percentiles)",
+  "(37) Natural Cubic Spline (5 percentiles)",
+  "(38) Natural Cubic Spline (defined Harrell)"
+)
+colnames(paramspline)=c("Intercept","ns1","ns2","ns3","ns4","ns5","ns6")
+
+
 #########################################
 ################ Output #################
 
@@ -2981,7 +3296,53 @@ critall=as.data.frame(selcri2),
 modeldescrip=as.data.frame(ModelPar2),
 critbest=as.data.frame(new2),
 bestmodel=c(R2model,R2adjmodel,RSEmodel,logLmodel,AICmodel,AICCmodel,BICmodel,DWmodel),
-Error=print(subset(warning[,1],warning[,2]=="FALSE"))
+Error=print(subset(warning[,1],warning[,2]=="FALSE")),
+ModelParam=list(mathematical=as.data.frame(paramabcdfgk),Legendre=as.data.frame(paramleg),Splines=as.data.frame(paramspline)),
+summary1=summaryMM,
+summary1a=summaryMMR,
+summary1b=summaryMME,
+summary2=summarybrody23,
+summary3=summarybrody24,
+summary4=summarySCH,
+summary4a=summarySCHL,
+summary5=summaryPBE,
+summary6=summarywood,
+summary6a=summaryDHA,
+summary6b=summaryCB,
+summary7=summaryQP,
+summary8=summaryCLD,
+summary9=summaryPapBo1,
+summary10=summaryPapBo2,
+summary11=summaryPapBo3,
+summary12=summaryPapBo4,
+summary13=summaryPapBo6,
+summary14=summaryGS1,
+summary15=summaryGS2,
+summary16=summaryLQ,
+summary17=summarywil,
+summary17a=summarywilk,
+summary17b=summarywilycsml,
+summary18=summaryBC,
+summary19=summaryDJK,
+summary20=summaryMG2,
+summary21=summaryMG4,
+summary22=summaryMG,
+summary23=summaryKHN,
+summary24=summaryAS,
+summary25=summaryFRP,
+summary26=summaryPTmult,
+summary27=summaryPTmod,
+summary28=summaryMonoG,
+summary29=summaryMonoGpw,
+summary30=summaryDiG,
+summary31=summaryDiGpw,
+summary32=summaryleg3,
+summary33=summaryleg4,
+summary34=summarypolWil,
+summary35=summarycubsplin3,
+summary36=summarycubsplin4,
+summary37=summarycubsplin5,
+summary38=summarycubsplindef
 )
 
 }

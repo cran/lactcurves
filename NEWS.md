@@ -1,3 +1,9 @@
+# lactcurves 1.1.0
+
+* Updated the references in the Description
+* Added model summaries and parameter tables to the output
+* Included an example to plot a lactation curve
+
 # lactcurves 1.0.0
 
 * Added a `NEWS.md` file to track changes to the package.
